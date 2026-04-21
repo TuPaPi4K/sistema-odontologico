@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Pacientes - IPSTAUCLA</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Pacientes 🦷</h1>
+        <form id="form-paciente" class="card">
+            <input type="text" id="cedula" placeholder="Cédula" required>
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="apellido" placeholder="Apellido" required>
+            <input type="date" id="fecha_nacimiento">
+            <input type="text" id="telefono" placeholder="Teléfono">
+            <select id="tipo_paciente">
+                <option value="Externo">Externo</option>
+                <option value="Afiliado">Afiliado</option>
+            </select>
+            <button type="submit">Guardar Paciente</button>
+        </form>
+
+        <hr>
+
+        <h2>Pacientes Registrados</h2>
+        <table border="1" id="tabla-pacientes">
+            <thead>
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/pacientes';
+
+        // Función para cargar pacientes (Consultar)
+        async function cargarPacientes() {
+            const res = await fetch(API_URL);
+            const pacientes = await res.json();
+            const tabla = document.querySelector('#tabla-pacientes tbody');
+            tabla.innerHTML = '';
+            pacientes.forEach(p => {
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${p.cedula}</td>
+                        <td>${p.nombre} ${p.apellido}</td>
+                        <td>${p.tipo_paciente}</td>
+                        <td>
+                            <button onclick="eliminar(${p.id_paciente})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Función para Guardar (Incluir)
+        document.getElementById('form-paciente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                cedula: document.getElementById('cedula').value,
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+                telefono: document.getElementById('telefono').value,
+                tipo_paciente: document.getElementById('tipo_paciente').value
+            };
+
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            e.target.reset();
+            cargarPacientes();
+        });
+
+        async function eliminar(id) {
+            if(confirm('¿Seguro?')) {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                cargarPacientes();
+            }
+        }
+
+        cargarPacientes();
+    </script>
+</body>
+</html>

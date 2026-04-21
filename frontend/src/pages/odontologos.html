@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Odontólogos - IPSTAUCLA</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>IPSTAUCLA 🦷</h1>
+        <ul>
+            <li><a href="../../index.html">Inicio</a></li>
+            <li><a href="pacientes.html">Pacientes</a></li>
+            <li><a href="odontologos.html">Odontólogos</a></li>
+            <li><a href="tratamientos.html">Tratamientos</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="card">
+            <h2>Registro de Odontólogo</h2>
+            <form id="form-odontologo">
+                <input type="text" id="cedula" placeholder="Cédula" required>
+                <input type="text" id="nombre" placeholder="Nombre Completo" required>
+                <input type="text" id="especialidad" placeholder="Especialidad" required>
+                <input type="text" id="telefono" placeholder="Teléfono" required>
+                <input type="email" id="email" placeholder="Correo" required>
+                <input type="text" id="horario" placeholder="Horario (Ej: 8am-12pm)" required>
+                <button type="submit">Registrar Profesional</button>
+            </form>
+        </div>
+        <table id="tabla-odontologos">
+            <thead>
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        const API = 'http://localhost:3000/api/odontologos';
+        async function cargar() {
+            const res = await fetch(API);
+            const data = await res.json();
+            const body = document.querySelector('#tabla-odontologos tbody');
+            body.innerHTML = data.map(o => `
+                <tr>
+                    <td>${o.cedula}</td>
+                    <td>${o.nombre}</td>
+                    <td>${o.especialidad}</td>
+                    <td><button class="btn-del" onclick="eliminar(${o.id_odontologo})">Borrar</button></td>
+                </tr>
+            `).join('');
+        }
+        document.getElementById('form-odontologo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const obj = {
+                cedula: document.getElementById('cedula').value,
+                nombre: document.getElementById('nombre').value,
+                especialidad: document.getElementById('especialidad').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                horario_atencion: document.getElementById('horario').value
+            };
+            await fetch(API, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(obj) });
+            e.target.reset(); cargar();
+        });
+        async function eliminar(id) { if(confirm('¿Eliminar?')) { await fetch(`${API}/${id}`, {method:'DELETE'}); cargar(); } }
+        cargar();
+    </script>
+</body>
+</html>
