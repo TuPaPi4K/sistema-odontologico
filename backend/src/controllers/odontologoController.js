@@ -1,49 +1,50 @@
-const db = require('../config/db');
+const pool = require('../config/db');
 
-const getOdontologos = async (req, res) => {
-    try {
-        const result = await db.query('SELECT * FROM Odontologo WHERE activo = true ORDER BY nombre ASC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// CONSULTAR TODOS
+const obtenerOdontologos = async (req, res) => {
+    const result = await pool.query('SELECT * FROM odontologos ORDER BY id_odontologo ASC');
+    res.json(result.rows);
 };
 
-const createOdontologo = async (req, res) => {
-    const { cedula, nombre, especialidad, telefono, email, horario_atencion } = req.body;
+// INCLUIR (Crear)
+const crearOdontologo = async (req, res) => {
+    const { nombre, especialidad, telefono } = req.body;
     try {
-        const result = await db.query(
-            'INSERT INTO Odontologo (cedula, nombre, especialidad, telefono, email, horario_atencion) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [cedula, nombre, especialidad, telefono, email, horario_atencion]
+        const result = await pool.query(
+            'INSERT INTO odontologos (nombre, especialidad, telefono) VALUES ($1, $2, $3) RETURNING *',
+            [nombre, especialidad, telefono]
         );
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ msg: "Error al registrar odontólogo" });
     }
 };
 
-const updateOdontologo = async (req, res) => {
+// MODIFICAR
+const actualizarOdontologo = async (req, res) => {
     const { id } = req.params;
-    const { nombre, especialidad, telefono, horario_atencion } = req.body;
+    const { nombre, especialidad, telefono } = req.body;
     try {
-        await db.query(
-            'UPDATE Odontologo SET nombre=$1, especialidad=$2, telefono=$3, horario_atencion=$4 WHERE id_odontologo=$5',
-            [nombre, especialidad, telefono, horario_atencion, id]
+        await pool.query(
+            'UPDATE odontologos SET nombre=$1, especialidad=$2, telefono=$3 WHERE id_odontologo=$4',
+            [nombre, especialidad, telefono, id]
         );
-        res.json({ message: "Odontólogo actualizado" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.json({ msg: "Actualizado correctamente" });
+    } catch (error) {
+        res.status(500).json({ msg: "Error al actualizar" });
     }
 };
 
-const deleteOdontologo = async (req, res) => {
+// ELIMINAR (Protección de integridad)
+const eliminarOdontologo = async (req, res) => {
     const { id } = req.params;
     try {
-        await db.query('UPDATE Odontologo SET activo = false WHERE id_odontologo = $1', [id]);
-        res.json({ message: "Odontólogo eliminado" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        // La base de datos fallará si el odontólogo tiene citas asociadas (Integridad Referencial)
+        await pool.query('DELETE FROM odontologos WHERE id_odontologo = $1', [id]);
+        res.json({ msg: "Registro eliminado" });
+    } catch (error) {
+        res.status(400).json({ msg: "No se puede eliminar: El odontólogo tiene transacciones (citas) activas." });
     }
 };
 
-module.exports = { getOdontologos, createOdontologo, updateOdontologo, deleteOdontologo };
+module.exports = { obtenerOdontologos, crearOdontologo, actualizarOdontologo, eliminarOdontologo };

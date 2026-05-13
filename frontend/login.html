@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - IPSTAUCLA</title>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5;">
+    <div class="card" style="width: 350px;">
+        <h2 style="text-align: center;">Acceso IPSTAUCLA</h2>
+        <form id="login-form">
+            <input type="text" id="user" placeholder="Usuario" required style="grid-column: span 2; margin-bottom: 10px;">
+            <input type="password" id="pass" placeholder="Contraseña" required style="grid-column: span 2; margin-bottom: 10px;">
+            <button type="submit" style="background: #28a745; width: 100%;">Entrar al Sistema</button>
+        </form>
+        <p id="error-msg" style="color: red; text-align: center; display: none; margin-top: 10px;">Error en credenciales</p>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre_usuario = document.getElementById('user').value;
+            const contrasena = document.getElementById('pass').value;
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre_usuario, contrasena })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = '/index.html'; // Entra al sistema
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').innerText = data.message;
+            }
+        });
+    </script>
+</body>
+</html>

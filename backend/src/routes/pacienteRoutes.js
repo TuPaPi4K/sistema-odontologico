@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const pacienteController = require('../controllers/pacienteController');
+const verifyRole = require('../middlewares/roleAuth');
 
-router.get('/', pacienteController.getPacientes);
-router.post('/', pacienteController.createPaciente);
-router.put('/:id', pacienteController.updatePaciente);
-router.delete('/:id', pacienteController.deletePaciente); 
+router.get('/', pacienteController.obtenerPacientes);
+router.post('/', pacienteController.crearPaciente);
+
+router.put('/:id', verifyRole(['admin']), pacienteController.actualizarPaciente);
+router.delete('/:id', verifyRole(['admin']), pacienteController.eliminarPaciente);
 
 module.exports = router;

@@ -2,24 +2,65 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPSTAUCLA - Gestión Odontológica</title>
-    <link rel="stylesheet" href="src/assets/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPSTAUCLA - Panel Principal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/src/assets/css/style.css">
 </head>
 <body>
-    <header>
-        <h1>Sistema IPSTAUCLA</h1>
-        <nav id="main-menu">
-            <ul>
-                <li><a href="index.html">Inicio</a></li>
-                <li><a href="src/pages/pacientes.html">Gestión de Pacientes</a></li>
-                <li><a href="#">Citas</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main id="app">
-        <h2>Panel de Control</h2>
-        </main>
+    <nav class="navbar">
+        <h1>IPSTAUCLA <i class="fa-solid fa-tooth"></i></h1>
+        <ul>
+            <li><a href="/index.html">Inicio</a></li>
+            <li><a href="/src/pages/pacientes.html">Pacientes</a></li>
+            <li><a href="/src/pages/odontologos.html">Odontólogos</a></li>
+            <li><a href="/src/pages/tratamientos.html">Tratamientos</a></li>
+            <li><a href="/src/pages/nueva_cita.html">Registrar Cita</a></li>
+            <li><a href="#" class="nav-disabled" onclick="logout()">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
 
-    <script src="src/assets/js/main.js"></script>
+    <main class="container">
+        <section class="welcome-card">
+            <h2>Gestión Odontológica IPSTAUCLA</h2>
+            <p id="user-welcome">Bienvenido al sistema.</p>
+
+            <div class="menu-grid">
+                <a href="/src/pages/pacientes.html" class="menu-item item-pacientes">
+                    <i class="fa-solid fa-hospital-user"></i>
+                    <h3>Pacientes</h3>
+                    <p>Registro y actualización de datos maestros.</p>
+                </a>
+                <a href="/src/pages/tratamientos.html" class="menu-item item-tratamientos">
+                    <i class="fa-solid fa-tooth"></i>
+                    <h3>Tratamientos</h3>
+                    <p>Catálogo de servicios y precios base.</p>
+                </a>
+                <a href="/src/pages/nueva_cita.html" class="menu-item" style="background: #e3f2fd;">
+                    <i class="fa-solid fa-calendar-check" style="color: #0d47a1;"></i>
+                    <h3 style="color: #0d47a1;">Transacciones</h3>
+                    <p>Procesar nuevas citas y cálculos de facturación.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <script src="/src/assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rol = localStorage.getItem('rol') || 'asistente';
+            const userWelcome = document.getElementById('user-welcome');
+            userWelcome.innerText = `Sesión iniciada como: ${rol.toUpperCase()}`;
+            
+            if (rol !== 'admin') {
+                document.querySelectorAll('.solo-admin').forEach(el => el.style.display = 'none');
+            }
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/frontend/login.html';
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,415 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict JBFY5i2uYL7iPwcKcEEtjdtOqjsILPop6WnCuZNjO4qIj8ETAWfhxFyxJXOpebs
+
+-- Dumped from database version 18.0
+-- Dumped by pg_dump version 18.0
+
+-- Started on 2026-04-22 09:04:13
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 220 (class 1259 OID 54037)
+-- Name: odontologo; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.odontologo (
+    id_odontologo integer NOT NULL,
+    cedula character varying(15) NOT NULL,
+    nombre character varying(100) NOT NULL,
+    especialidad character varying(100) NOT NULL,
+    telefono character varying(20) NOT NULL,
+    email character varying(100) NOT NULL,
+    horario_atencion character varying(255) NOT NULL,
+    activo boolean DEFAULT true
+);
+
+
+ALTER TABLE public.odontologo OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 54036)
+-- Name: odontologo_id_odontologo_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.odontologo_id_odontologo_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.odontologo_id_odontologo_seq OWNER TO postgres;
+
+--
+-- TOC entry 4958 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: odontologo_id_odontologo_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.odontologo_id_odontologo_seq OWNED BY public.odontologo.id_odontologo;
+
+
+--
+-- TOC entry 226 (class 1259 OID 54093)
+-- Name: paciente; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.paciente (
+    id_paciente integer NOT NULL,
+    cedula character varying(15) NOT NULL,
+    nombre character varying(100) NOT NULL,
+    apellido character varying(100) NOT NULL,
+    fecha_nacimiento date,
+    telefono character varying(20),
+    tipo_paciente character varying(50) DEFAULT 'Externo'::character varying,
+    motivo_consulta text,
+    alergias text,
+    patologias text,
+    antecedentes_familiares text,
+    cirugias_previas text,
+    activo boolean DEFAULT true
+);
+
+
+ALTER TABLE public.paciente OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 54092)
+-- Name: paciente_id_paciente_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.paciente_id_paciente_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.paciente_id_paciente_seq OWNER TO postgres;
+
+--
+-- TOC entry 4959 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: paciente_id_paciente_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.paciente_id_paciente_seq OWNED BY public.paciente.id_paciente;
+
+
+--
+-- TOC entry 222 (class 1259 OID 54058)
+-- Name: tratamiento; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tratamiento (
+    id_tratamiento integer NOT NULL,
+    codigo character varying(20) NOT NULL,
+    nombre character varying(100) NOT NULL,
+    descripcion text,
+    precio numeric(10,2) NOT NULL,
+    activo boolean DEFAULT true
+);
+
+
+ALTER TABLE public.tratamiento OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 54057)
+-- Name: tratamiento_id_tratamiento_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.tratamiento_id_tratamiento_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.tratamiento_id_tratamiento_seq OWNER TO postgres;
+
+--
+-- TOC entry 4960 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: tratamiento_id_tratamiento_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.tratamiento_id_tratamiento_seq OWNED BY public.tratamiento.id_tratamiento;
+
+
+--
+-- TOC entry 224 (class 1259 OID 54074)
+-- Name: usuario; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.usuario (
+    id_usuario integer NOT NULL,
+    nombre_usuario character varying(50) NOT NULL,
+    contrasena character varying(255) NOT NULL,
+    rol character varying(20) NOT NULL,
+    id_odontologo integer,
+    activo boolean DEFAULT true
+);
+
+
+ALTER TABLE public.usuario OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 54073)
+-- Name: usuario_id_usuario_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.usuario_id_usuario_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.usuario_id_usuario_seq OWNER TO postgres;
+
+--
+-- TOC entry 4961 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: usuario_id_usuario_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.usuario_id_usuario_seq OWNED BY public.usuario.id_usuario;
+
+
+--
+-- TOC entry 4770 (class 2604 OID 54040)
+-- Name: odontologo id_odontologo; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.odontologo ALTER COLUMN id_odontologo SET DEFAULT nextval('public.odontologo_id_odontologo_seq'::regclass);
+
+
+--
+-- TOC entry 4776 (class 2604 OID 54096)
+-- Name: paciente id_paciente; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.paciente ALTER COLUMN id_paciente SET DEFAULT nextval('public.paciente_id_paciente_seq'::regclass);
+
+
+--
+-- TOC entry 4772 (class 2604 OID 54061)
+-- Name: tratamiento id_tratamiento; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tratamiento ALTER COLUMN id_tratamiento SET DEFAULT nextval('public.tratamiento_id_tratamiento_seq'::regclass);
+
+
+--
+-- TOC entry 4774 (class 2604 OID 54077)
+-- Name: usuario id_usuario; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario ALTER COLUMN id_usuario SET DEFAULT nextval('public.usuario_id_usuario_seq'::regclass);
+
+
+--
+-- TOC entry 4946 (class 0 OID 54037)
+-- Dependencies: 220
+-- Data for Name: odontologo; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.odontologo (id_odontologo, cedula, nombre, especialidad, telefono, email, horario_atencion, activo) FROM stdin;
+1	4738200	Pastor Perez	Cardiología	04145672928	pastor@gmail.com	7am - 8pm	t
+\.
+
+
+--
+-- TOC entry 4952 (class 0 OID 54093)
+-- Dependencies: 226
+-- Data for Name: paciente; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.paciente (id_paciente, cedula, nombre, apellido, fecha_nacimiento, telefono, tipo_paciente, motivo_consulta, alergias, patologias, antecedentes_familiares, cirugias_previas, activo) FROM stdin;
+1	31271715	Enrique	Perez	2005-07-28	04145521952	Externo	\N	\N	\N	\N	\N	f
+3	4444444	esteven	alucan	2026-04-09	04245571393	Afiliado	\N	\N	\N	\N	\N	t
+\.
+
+
+--
+-- TOC entry 4948 (class 0 OID 54058)
+-- Dependencies: 222
+-- Data for Name: tratamiento; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.tratamiento (id_tratamiento, codigo, nombre, descripcion, precio, activo) FROM stdin;
+1	LIMO11	Ortodoncia	Tremendo	40.00	t
+\.
+
+
+--
+-- TOC entry 4950 (class 0 OID 54074)
+-- Dependencies: 224
+-- Data for Name: usuario; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.usuario (id_usuario, nombre_usuario, contrasena, rol, id_odontologo, activo) FROM stdin;
+1	admin	1234	Administrador	\N	t
+\.
+
+
+--
+-- TOC entry 4962 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: odontologo_id_odontologo_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.odontologo_id_odontologo_seq', 1, true);
+
+
+--
+-- TOC entry 4963 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: paciente_id_paciente_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.paciente_id_paciente_seq', 4, true);
+
+
+--
+-- TOC entry 4964 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: tratamiento_id_tratamiento_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.tratamiento_id_tratamiento_seq', 1, true);
+
+
+--
+-- TOC entry 4965 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: usuario_id_usuario_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.usuario_id_usuario_seq', 1, true);
+
+
+--
+-- TOC entry 4780 (class 2606 OID 54054)
+-- Name: odontologo odontologo_cedula_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.odontologo
+    ADD CONSTRAINT odontologo_cedula_key UNIQUE (cedula);
+
+
+--
+-- TOC entry 4782 (class 2606 OID 54056)
+-- Name: odontologo odontologo_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.odontologo
+    ADD CONSTRAINT odontologo_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4784 (class 2606 OID 54052)
+-- Name: odontologo odontologo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.odontologo
+    ADD CONSTRAINT odontologo_pkey PRIMARY KEY (id_odontologo);
+
+
+--
+-- TOC entry 4794 (class 2606 OID 54108)
+-- Name: paciente paciente_cedula_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.paciente
+    ADD CONSTRAINT paciente_cedula_key UNIQUE (cedula);
+
+
+--
+-- TOC entry 4796 (class 2606 OID 54106)
+-- Name: paciente paciente_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.paciente
+    ADD CONSTRAINT paciente_pkey PRIMARY KEY (id_paciente);
+
+
+--
+-- TOC entry 4786 (class 2606 OID 54072)
+-- Name: tratamiento tratamiento_codigo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tratamiento
+    ADD CONSTRAINT tratamiento_codigo_key UNIQUE (codigo);
+
+
+--
+-- TOC entry 4788 (class 2606 OID 54070)
+-- Name: tratamiento tratamiento_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tratamiento
+    ADD CONSTRAINT tratamiento_pkey PRIMARY KEY (id_tratamiento);
+
+
+--
+-- TOC entry 4790 (class 2606 OID 54086)
+-- Name: usuario usuario_nombre_usuario_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_nombre_usuario_key UNIQUE (nombre_usuario);
+
+
+--
+-- TOC entry 4792 (class 2606 OID 54084)
+-- Name: usuario usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_pkey PRIMARY KEY (id_usuario);
+
+
+--
+-- TOC entry 4797 (class 2606 OID 54087)
+-- Name: usuario usuario_id_odontologo_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuario
+    ADD CONSTRAINT usuario_id_odontologo_fkey FOREIGN KEY (id_odontologo) REFERENCES public.odontologo(id_odontologo);
+
+
+-- Completed on 2026-04-22 09:04:13
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict JBFY5i2uYL7iPwcKcEEtjdtOqjsILPop6WnCuZNjO4qIj8ETAWfhxFyxJXOpebs
+

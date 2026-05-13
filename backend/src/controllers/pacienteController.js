@@ -1,36 +1,39 @@
-const db = require('../config/db');
+const pool = require('../config/db');
 
-// Consultar todos 
-const getPacientes = async (req, res) => {
-    try {
-        const result = await db.query('SELECT * FROM Paciente WHERE activo = true ORDER BY id_paciente DESC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+const obtenerPacientes = async (req, res) => {
+    const result = await pool.query('SELECT * FROM pacientes ORDER BY nombre ASC');
+    res.json(result.rows);
 };
 
-// Incluir (Insertar) [cite: 67, 68]
-const createPaciente = async (req, res) => {
-    const { cedula, nombre, apellido, fecha_nacimiento, telefono, tipo_paciente } = req.body;
+const crearPaciente = async (req, res) => {
+    const { cedula, nombre, apellido, telefono, email } = req.body;
     try {
-        const result = await db.query(
-            'INSERT INTO Paciente (cedula, nombre, apellido, fecha_nacimiento, telefono, tipo_paciente) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [cedula, nombre, apellido, fecha_nacimiento, telefono, tipo_paciente]
+        const result = await pool.query(
+            'INSERT INTO pacientes (cedula, nombre, apellido, telefono, email) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [cedula, nombre, apellido, telefono, email]
         );
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ msg: "Error al registrar paciente" });
     }
 };
 
-// Modificar (Actualizar) 
-const updatePaciente = async (req, res) => {
+const eliminarPaciente = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM pacientes WHERE id_paciente = $1', [id]);
+        res.json({ msg: "Paciente eliminado" });
+    } catch (error) {
+        res.status(400).json({ msg: "No se puede eliminar: El paciente tiene citas registradas." });
+    }
+};
+
+const actualizarPaciente = async (req, res) => {
     const { id } = req.params;
     const { nombre, apellido, telefono, tipo_paciente } = req.body;
     try {
-        await db.query(
-            'UPDATE Paciente SET nombre=$1, apellido=$2, telefono=$3, tipo_paciente=$4 WHERE id_paciente=$5',
+        await pool.query(
+            'UPDATE pacientes SET nombre=$1, apellido=$2, telefono=$3, tipo_paciente=$4 WHERE id_paciente=$5',
             [nombre, apellido, telefono, tipo_paciente, id]
         );
         res.json({ message: "Paciente actualizado" });
@@ -39,15 +42,4 @@ const updatePaciente = async (req, res) => {
     }
 };
 
-// Eliminar (Borrado Lógico) 
-const deletePaciente = async (req, res) => {
-    const { id } = req.params;
-    try {
-        await db.query('UPDATE Paciente SET activo = false WHERE id_paciente = $1', [id]);
-        res.json({ message: "Paciente eliminado lógicamente" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-module.exports = { getPacientes, createPaciente, updatePaciente, deletePaciente };
+module.exports = { obtenerPacientes, crearPaciente, actualizarPaciente, eliminarPaciente };

@@ -1,13 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Pacientes - IPSTAUCLA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+
 <body>
+    <nav class="navbar">
+    <h1>IPSTAUCLA <i class="fa-solid fa-tooth"></i></h1>
+    <ul>
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/src/pages/pacientes.html">Pacientes</a></li>
+        <li><a href="/src/pages/odontologos.html">Odontólogos</a></li>
+        <li><a href="/src/pages/tratamientos.html">Tratamientos</a></li>
+        
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Citas</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Presupuestos</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Historias</a></li>
+    </ul>
+</nav>
+
     <div class="container">
-        <h1>Registro de Pacientes 🦷</h1>
+        <h1 id="main-title">Registro de Pacientes <i class="fa-solid fa-tooth"></i></h1>
         <form id="form-paciente" class="card">
             <input type="text" id="cedula" placeholder="Cédula" required>
             <input type="text" id="nombre" placeholder="Nombre" required>
@@ -24,45 +41,105 @@
         <hr>
 
         <h2>Pacientes Registrados</h2>
-        <table border="1" id="tabla-pacientes">
+        <table id="tabla-pacientes">
             <thead>
                 <tr>
                     <th>Cédula</th>
                     <th>Nombre</th>
+                    <th>Fecha de Nacimiento</th>
+                    <th>Teléfono</th>
                     <th>Tipo</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                </tbody>
+            </tbody>
         </table>
     </div>
 
     <script>
         const API_URL = 'http://localhost:3000/api/pacientes';
 
-        // Función para cargar pacientes (Consultar)
+        // 1. FUNCIÓN PARA CONSULTAR (CARGAR)
         async function cargarPacientes() {
             const res = await fetch(API_URL);
             const pacientes = await res.json();
             const tabla = document.querySelector('#tabla-pacientes tbody');
-            tabla.innerHTML = '';
-            pacientes.forEach(p => {
-                tabla.innerHTML += `
-                    <tr>
-                        <td>${p.cedula}</td>
-                        <td>${p.nombre} ${p.apellido}</td>
-                        <td>${p.tipo_paciente}</td>
-                        <td>
-                            <button onclick="eliminar(${p.id_paciente})">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
+
+            tabla.innerHTML = pacientes.map(p => {
+                // Formatear fecha para que no salga "2026-04-21T00:00:00.000Z"
+                const fechaFormateada = p.fecha_nacimiento
+                    ? new Date(p.fecha_nacimiento).toLocaleDateString('es-VE')
+                    : 'No registrada';
+
+                return `
+    <tr>
+        <td>${p.cedula}</td>
+        <td>${p.nombre} ${p.apellido}</td>
+        <td>${fechaFormateada}</td>
+        <td>${p.telefono || '-'}</td>
+        <td>${p.tipo_paciente}</td>
+        <td style="white-space: nowrap;">
+            <button title="Editar" onclick="prepararEdicion(${p.id_paciente}, '${p.cedula}', '${p.nombre}', '${p.apellido}', '${p.telefono}', '${p.tipo_paciente}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button title="Eliminar" class="btn-del" onclick="eliminar(${p.id_paciente})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+`;
+            }).join('');
         }
 
-        // Función para Guardar (Incluir)
-        document.getElementById('form-paciente').addEventListener('submit', async (e) => {
+        // 2. FUNCIÓN PARA MODIFICAR (PREPARAR EL FORMULARIO)
+        function prepararEdicion(id, cedula, nombre, apellido, tel, tipo) {
+            document.getElementById('cedula').value = cedula;
+            document.getElementById('cedula').disabled = true;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('apellido').value = apellido;
+            document.getElementById('telefono').value = tel;
+            document.getElementById('tipo_paciente').value = tipo;
+
+            const btn = document.querySelector('#form-paciente button');
+            btn.innerText = "Guardar Cambios (Actualizar)";
+            btn.style.background = "#ffc107"; 
+            btn.style.color = "black";
+
+            document.getElementById('form-paciente').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = {
+                    nombre: document.getElementById('nombre').value,
+                    apellido: document.getElementById('apellido').value,
+                    telefono: document.getElementById('telefono').value,
+                    tipo_paciente: document.getElementById('tipo_paciente').value
+                };
+
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    alert('Paciente actualizado con éxito');
+                    location.reload(); 
+                }
+            };
+        }
+
+        // 3. FUNCIÓN PARA ELIMINAR
+        async function eliminar(id) {
+            if (confirm('¿Estás seguro de eliminar este registro?')) {
+                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    cargarPacientes();
+                }
+            }
+        }
+
+        // 4. COMPORTAMIENTO INICIAL (INCLUIR)
+        document.getElementById('form-paciente').onsubmit = async (e) => {
             e.preventDefault();
             const data = {
                 cedula: document.getElementById('cedula').value,
@@ -75,22 +152,17 @@
 
             await fetch(API_URL, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            
+
             e.target.reset();
             cargarPacientes();
-        });
-
-        async function eliminar(id) {
-            if(confirm('¿Seguro?')) {
-                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                cargarPacientes();
-            }
-        }
+        };
 
         cargarPacientes();
     </script>
+
 </body>
+
 </html>

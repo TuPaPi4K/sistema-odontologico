@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Transacción - IPSTAUCLA</title>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>IPSTAUCLA <i class="fa-solid fa-tooth"></i></h1>
+        <ul><li><a href="/index.html">Volver al Inicio</a></li></ul>
+    </nav>
+
+    <div class="container">
+        <h1>Registrar Movimiento: Cita Médica <i class="fa-solid fa-file-invoice-dollar"></i></h1>
+        
+        <div class="card">
+            <form id="form-transaccion">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label>Paciente:</label>
+                        <select id="id_paciente" required class="form-control"></select>
+                    </div>
+                    <div>
+                        <label>Odontólogo:</label>
+                        <select id="id_odontologo" required class="form-control"></select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Tratamiento a realizar:</label>
+                    <select id="id_tratamiento" required class="form-control" onchange="calcularFacturacion()">
+                        <option value="" data-precio="0">Seleccione un servicio...</option>
+                    </select>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Fecha de la Cita:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <span id="txt-subtotal">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>IVA (16%):</span>
+                        <span id="txt-iva">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: #2e7d32;">
+                        <span>TOTAL A PAGAR:</span>
+                        <span id="txt-total">$0.00</span>
+                    </div>
+                </div>
+
+                <button type="submit" style="margin-top: 20px; background: #2e7d32;">Confirmar Transacción</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Cargar combos al iniciar
+        async function inicializar() {
+            const [pacientes, odontologos, tratamientos] = await Promise.all([
+                fetch(`${API_BASE}/pacientes`).then(r => r.json()),
+                fetch(`${API_BASE}/odontologos`).then(r => r.json()),
+                fetch(`${API_BASE}/tratamientos`).then(r => r.json())
+            ]);
+
+            document.getElementById('id_paciente').innerHTML = pacientes.map(p => `<option value="${p.id_paciente}">${p.nombre} ${p.apellido}</option>`).join('');
+            document.getElementById('id_odontologo').innerHTML = odontologos.map(o => `<option value="${o.id_odontologo}">${o.nombre}</option>`).join('');
+            document.getElementById('id_tratamiento').innerHTML += tratamientos.map(t => `<option value="${t.id_tratamiento}" data-precio="${t.precio}">${t.nombre} ($${t.precio})</option>`).join('');
+        }
+
+        function calcularFacturacion() {
+            const select = document.getElementById('id_tratamiento');
+            const precioBase = parseFloat(select.options[select.selectedIndex].dataset.precio) || 0;
+            
+            const iva = precioBase * 0.16;
+            const total = precioBase + iva;
+
+            document.getElementById('txt-subtotal').innerText = `$${precioBase.toFixed(2)}`;
+            document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        document.getElementById('form-transaccion').onsubmit = async (e) => {
+            e.preventDefault();
+            // CONFIRMACIÓN (Requerida por rúbrica)
+            if(!confirm("¿Está seguro de procesar este movimiento? Se generará un registro de facturación.")) return;
+
+            const datos = {
+                id_paciente: document.getElementById('id_paciente').value,
+                id_odontologo: document.getElementById('id_odontologo').value,
+                id_tratamiento: document.getElementById('id_tratamiento').value,
+                fecha: document.getElementById('fecha').value,
+                hora: '08:00:00' // Valor por defecto
+            };
+
+            const res = await fetch(`${API_BASE}/citas`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
+            });
+
+            if(res.ok) {
+                alert("Transacción completada con éxito.");
+                window.location.href = '/index.html';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+    // Bloquear fechas pasadas en el selector de calendario
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha').setAttribute('min', hoy);
+});
+
+        inicializar();
+    </script>
+</body>
+</html>

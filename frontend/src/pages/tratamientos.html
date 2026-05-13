@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tratamientos - IPSTAUCLA</title>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+    <h1>IPSTAUCLA <i class="fa-solid fa-tooth"></i></h1>
+    <ul>
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/src/pages/pacientes.html">Pacientes</a></li>
+        <li><a href="/src/pages/odontologos.html">Odontólogos</a></li>
+        <li><a href="/src/pages/tratamientos.html">Tratamientos</a></li>
+        
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Citas</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Presupuestos</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Historias</a></li>
+    </ul>
+</nav>
+
+    <div class="container">
+        <h1 id="main-title">Gestión de Tratamientos <i class="fa-solid fa-hand-holding-medical"></i></h1>
+        
+        <div class="card solo-admin"> <form id="form-tratamiento">
+                <input type="text" id="codigo" placeholder="Código (Ej: LIM01)" required>
+                <input type="text" id="nombre" placeholder="Nombre del Tratamiento" required>
+                <input type="text" id="descripcion" placeholder="Descripción corta" style="grid-column: span 2;">
+                <input type="number" id="precio" placeholder="Precio Base ($)" step="0.01" required style="grid-column: span 2;">
+                <button type="submit" id="btn-submit">Guardar en Catálogo</button>
+            </form>
+        </div>
+
+        <hr>
+        <h2>Catálogo de Servicios</h2>
+        <table id="tabla-tratamientos">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api/tratamientos';
+        const rolActual = localStorage.getItem('rol');
+
+        async function cargar() {
+            const res = await fetch(API);
+            const data = await res.json();
+            const body = document.querySelector('#tabla-tratamientos tbody');
+            
+            body.innerHTML = data.map(t => `
+                <tr>
+                    <td><strong>${t.codigo}</strong></td>
+                    <td>${t.nombre}</td>
+                    <td>$${t.precio}</td>
+                    <td>
+                        <button title="Editar" onclick="prepararEdicion(${t.id_tratamiento}, '${t.codigo}', '${t.nombre}', '${t.descripcion}', ${t.precio})">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        ${rolActual === 'admin' ? `
+                            <button title="Eliminar" class="btn-del" onclick="eliminar(${t.id_tratamiento})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function prepararEdicion(id, cod, nom, desc, precio) {
+            document.getElementById('codigo').value = cod;
+            document.getElementById('codigo').disabled = true;
+            document.getElementById('nombre').value = nom;
+            document.getElementById('descripcion').value = desc === 'null' ? '' : desc;
+            document.getElementById('precio').value = precio;
+
+            document.getElementById('main-title').innerHTML = 'Actualizar Tratamiento <i class="fa-solid fa-pen-to-square"></i>';
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = "Guardar Cambios";
+            btn.style.background = "#ffc107";
+            btn.style.color = "black";
+
+            document.getElementById('form-tratamiento').onsubmit = async (e) => {
+                e.preventDefault();
+                await fetch(`${API}/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        nombre: document.getElementById('nombre').value,
+                        descripcion: document.getElementById('descripcion').value,
+                        precio: document.getElementById('precio').value
+                    })
+                });
+                location.reload();
+            };
+        }
+
+        async function eliminar(id) {
+            if(confirm('¿Eliminar este tratamiento?')) {
+                await fetch(`${API}/${id}`, {method:'DELETE'});
+                cargar();
+            }
+        }
+
+        document.getElementById('form-tratamiento').onsubmit = async (e) => {
+            e.preventDefault();
+            const obj = {
+                codigo: document.getElementById('codigo').value,
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                precio: document.getElementById('precio').value
+            };
+            await fetch(API, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(obj) 
+            });
+            e.target.reset(); cargar();
+        };
+
+        cargar();
+    </script>
+</body>
+</html>

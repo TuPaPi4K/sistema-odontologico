@@ -2,60 +2,135 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Odontólogos - IPSTAUCLA</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
-        <h1>IPSTAUCLA 🦷</h1>
-        <ul>
-            <li><a href="../../index.html">Inicio</a></li>
-            <li><a href="pacientes.html">Pacientes</a></li>
-            <li><a href="odontologos.html">Odontólogos</a></li>
-            <li><a href="tratamientos.html">Tratamientos</a></li>
-        </ul>
-    </nav>
+    <h1>IPSTAUCLA <i class="fa-solid fa-tooth"></i></h1>
+    <ul>
+        <li><a href="/index.html">Inicio</a></li>
+        <li><a href="/src/pages/pacientes.html">Pacientes</a></li>
+        <li><a href="/src/pages/odontologos.html">Odontólogos</a></li>
+        <li><a href="/src/pages/tratamientos.html">Tratamientos</a></li>
+        
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Citas</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Presupuestos</a></li>
+        <li><a href="#" class="nav-disabled" onclick="alert('Módulo en desarrollo'); return false;">Historias</a></li>
+    </ul>
+</nav>
+
     <div class="container">
+        <h1 id="main-title">Registro de Odontólogos <i class="fa-solid fa-user-doctor"></i></h1>
+        
         <div class="card">
-            <h2>Registro de Odontólogo</h2>
             <form id="form-odontologo">
                 <input type="text" id="cedula" placeholder="Cédula" required>
                 <input type="text" id="nombre" placeholder="Nombre Completo" required>
                 <input type="text" id="especialidad" placeholder="Especialidad" required>
                 <input type="text" id="telefono" placeholder="Teléfono" required>
-                <input type="email" id="email" placeholder="Correo" required>
-                <input type="text" id="horario" placeholder="Horario (Ej: 8am-12pm)" required>
-                <button type="submit">Registrar Profesional</button>
+                <input type="email" id="email" placeholder="Correo Electrónico" required>
+                <input type="text" id="horario" placeholder="Horario (Ej: 8am - 12pm)" required>
+                <button type="submit" id="btn-submit">Registrar Profesional</button>
             </form>
         </div>
+
+        <hr>
+
+        <h2>Doctores Registrados</h2>
         <table id="tabla-odontologos">
             <thead>
                 <tr>
                     <th>Cédula</th>
                     <th>Nombre</th>
                     <th>Especialidad</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Horario</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                </tbody>
         </table>
     </div>
+
     <script>
         const API = 'http://localhost:3000/api/odontologos';
+
+        // 1. CARGAR DATOS
         async function cargar() {
             const res = await fetch(API);
             const data = await res.json();
             const body = document.querySelector('#tabla-odontologos tbody');
+            
             body.innerHTML = data.map(o => `
                 <tr>
                     <td>${o.cedula}</td>
                     <td>${o.nombre}</td>
                     <td>${o.especialidad}</td>
-                    <td><button class="btn-del" onclick="eliminar(${o.id_odontologo})">Borrar</button></td>
+                    <td>${o.telefono}</td>
+                    <td>${o.email}</td>
+                    <td>${o.horario_atencion}</td>
+                    <td style="white-space: nowrap;">
+                        <button title="Editar" onclick="prepararEdicion(${o.id_odontologo}, '${o.cedula}', '${o.nombre}', '${o.especialidad}', '${o.telefono}', '${o.email}', '${o.horario_atencion}')">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button title="Eliminar" class="btn-del" onclick="eliminar(${o.id_odontologo})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `).join('');
         }
-        document.getElementById('form-odontologo').addEventListener('submit', async (e) => {
+
+        // 2. LÓGICA DE MODIFICAR
+        function prepararEdicion(id, cedula, nombre, espec, tel, email, horario) {
+            document.getElementById('cedula').value = cedula;
+            document.getElementById('cedula').disabled = true;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('especialidad').value = espec;
+            document.getElementById('telefono').value = tel;
+            document.getElementById('email').value = email;
+            document.getElementById('horario').value = horario;
+
+            // Cambiar textos para que el usuario sepa que está editando
+            document.getElementById('main-title').innerText = "Actualizar Odontólogo 📝";
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = "Guardar Cambios";
+            btn.style.background = "#ffc107";
+            btn.style.color = "black";
+
+            document.getElementById('form-odontologo').onsubmit = async (e) => {
+                e.preventDefault();
+                const obj = {
+                    nombre: document.getElementById('nombre').value,
+                    especialidad: document.getElementById('especialidad').value,
+                    telefono: document.getElementById('telefono').value,
+                    horario_atencion: document.getElementById('horario').value
+                };
+
+                await fetch(`${API}/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(obj)
+                });
+                location.reload();
+            };
+        }
+
+        // 3. ELIMINAR
+        async function eliminar(id) {
+            if(confirm('¿Está seguro de eliminar este registro?')) {
+                await fetch(`${API}/${id}`, { method: 'DELETE' });
+                cargar();
+            }
+        }
+
+        // 4. INCLUIR (POST)
+        document.getElementById('form-odontologo').onsubmit = async (e) => {
             e.preventDefault();
             const obj = {
                 cedula: document.getElementById('cedula').value,
@@ -65,10 +140,17 @@
                 email: document.getElementById('email').value,
                 horario_atencion: document.getElementById('horario').value
             };
-            await fetch(API, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(obj) });
-            e.target.reset(); cargar();
-        });
-        async function eliminar(id) { if(confirm('¿Eliminar?')) { await fetch(`${API}/${id}`, {method:'DELETE'}); cargar(); } }
+
+            await fetch(API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(obj)
+            });
+            
+            e.target.reset();
+            cargar();
+        };
+
         cargar();
     </script>
 </body>
