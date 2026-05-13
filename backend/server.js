@@ -18,11 +18,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/pacientes', pacienteRoutes);
-app.use('/api/odontologos', odontologoRoutes);
-app.use('/api/tratamientos', tratamientoRoutes);
-app.use('/api/citas', citaRoutes);
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/pacientes', require('./src/routes/pacienteRoutes'));
+app.use('/api/odontologos', require('./src/routes/odontologoRoutes'));
+app.use('/api/tratamientos', require('./src/routes/tratamientoRoutes'));
+app.use('/api/citas', require('./src/routes/citaRoutes'));
 
 app.use(express.static(path.join(__dirname, '../frontend')));
 
